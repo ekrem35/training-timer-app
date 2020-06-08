@@ -1,6 +1,8 @@
 import {combineReducers} from 'redux';
 
-const storage = (state = {}, action) => {
+const initialState = {periods: []};
+
+const storage = (state = initialState, action) => {
   switch (action.type) {
     case 'SET_STORAGE':
       return action.payload;
