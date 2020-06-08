@@ -15,8 +15,12 @@ import {
   Card,
   CardItem,
   Button,
-  Item,
+  Footer,
+  FooterTab,
+  Icon,
+  Right,
 } from 'native-base';
+import {TouchableOpacity} from 'react-native';
 
 type Props = {storage: Object, saveState: (state: Object) => void};
 
@@ -32,7 +36,7 @@ class MainScreen extends Component<Props> {
 
   createPeriod() {
     this.setState(prev => ({
-      periods: [...prev.periods, ...[{time: 160}]],
+      periods: [...prev.periods, ...[{time: 160, delay: 80}]],
     }));
   }
 
@@ -44,40 +48,57 @@ class MainScreen extends Component<Props> {
           <Body>
             <Title>Training Timer</Title>
           </Body>
+          <Right style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.touchable}
+              onPress={() => this.createPeriod()}>
+              <Text style={styles.touchText}>Add a period</Text>
+              <Icon style={styles.headerRightIcon} name="add" />
+            </TouchableOpacity>
+          </Right>
         </Header>
         <Content>
-          <Button success onPress={() => this.createPeriod()}>
-            <Text>Add a period</Text>
-          </Button>
           {periods.map((period, index) => (
             <Card key={index}>
               <CardItem>
                 <Text>{period.time}</Text>
               </CardItem>
+              <CardItem>
+                <Text>{period.delay}</Text>
+              </CardItem>
             </Card>
           ))}
         </Content>
-        <Item style={styles.bottom}>
-          <Button primary onPress={() => {}}>
-            <Text>Clear All</Text>
-          </Button>
-          <Button warning onPress={() => {}}>
-            <Text>Reset</Text>
-          </Button>
-          <Button danger onPress={() => {}}>
-            <Text>Stop</Text>
-          </Button>
-          <Button success onPress={() => {}}>
-            <Text>Start</Text>
-          </Button>
-        </Item>
+        <Footer>
+          <FooterTab>
+            <Button vertical onPress={() => this.setState({periods: []})}>
+              <Icon name="trash" />
+              <Text>Clear</Text>
+            </Button>
+            <Button vertical>
+              <Icon name="refresh" />
+              <Text>Refresh</Text>
+            </Button>
+            <Button vertical>
+              <Icon name="pause" />
+              <Text>Wait</Text>
+            </Button>
+            <Button vertical>
+              <Icon name="play" />
+              <Text>Start</Text>
+            </Button>
+          </FooterTab>
+        </Footer>
       </Container>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  bottom: {justifyContent: 'space-around'},
+  headerRightIcon: {color: 'white'},
+  headerRight: {paddingRight: 15},
+  touchable: {flexDirection: 'row'},
+  touchText: {marginRight: 15, marginTop: 3, color: 'white'},
 });
 
 const mapStateToProps = state => ({
