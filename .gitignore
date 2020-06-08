@@ -2,6 +2,10 @@
 #
 .DS_Store
 
+# vscode react native debugger caches
+.vscode/.react/index.bundle
+.vscode/.react/index.map
+
 
 # Xcode
 #
