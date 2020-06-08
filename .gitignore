@@ -2,6 +2,11 @@
 #
 .DS_Store
 
+# vscode react native debugger caches
+.vscode/.react/index.bundle
+.vscode/.react/index.map
+
+
 # Xcode
 #
 build/
@@ -34,6 +39,7 @@ local.properties
 node_modules/
 npm-debug.log
 yarn-error.log
+package-lock.json
 
 # BUCK
 buck-out/
