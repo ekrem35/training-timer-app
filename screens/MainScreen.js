@@ -12,22 +12,35 @@ import {
   Text,
   Body,
   Title,
-  Card,
-  CardItem,
   Button,
   Footer,
   FooterTab,
   Icon,
   Right,
+  View,
 } from 'native-base';
 import {TouchableOpacity} from 'react-native';
+import {Timer} from 'react-native-stopwatch-timer';
+import moment from 'moment';
 
-type Props = {storage: Object, saveState: (state: Object) => void};
+type State = {
+  periods: Array<{
+    id: Number,
+    timerStart: Boolean,
+    totalDuration: Number,
+    timerReset: Boolean,
+    active: Boolean,
+    duration: Number,
+  }>,
+};
 
-class MainScreen extends Component<Props> {
-  constructor(props) {
+type Props = {storage: State, saveState: (state: Object) => void};
+
+class MainScreen extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
-    this.state = props.storage;
+    this.state = {...props.storage, ...{temp: props.storage.periods}};
+    this.currentTimes = {};
   }
 
   componentWillUnmount() {
@@ -36,8 +49,70 @@ class MainScreen extends Component<Props> {
 
   createPeriod() {
     this.setState(prev => ({
-      periods: [...prev.periods, ...[{time: 160, delay: 80}]],
+      periods: [
+        ...prev.periods,
+        ...[
+          {
+            id: prev.periods.length,
+            timerStart: false,
+            totalDuration: prev.duration,
+            timerReset: false,
+            active: prev.periods.length === 0,
+          },
+        ],
+      ],
     }));
+  }
+
+  toggleTimer(value = false, focused = -1) {
+    const {periods} = this.state;
+    const filteredArray = periods.filter(period => period.active === true);
+    const index = filteredArray.length
+      ? focused > -1
+        ? focused
+        : periods.findIndex(element => filteredArray[0].id === element.id)
+      : 0;
+
+    if (index < 0) {
+      return false;
+    }
+
+    periods[index].timerStart = !periods[index].timerStart;
+    periods[index].timerReset = false;
+
+    this.setState({periods});
+  }
+
+  resetTimer() {
+    const {periods} = this.state;
+    const index = periods.findIndex(
+      periods.filter(period => period.active === true)[0],
+    );
+    if (!index > -1) {
+      return false;
+    }
+    periods[index].timerStart = false;
+    periods[index].timerReset = true;
+    this.setState({periods});
+  }
+
+  getFormattedTime(time, index) {
+    this.currentTimes[index] = moment
+      .duration(moment(time, 'HH:mm:ss.SSSS'))
+      .hours();
+  }
+
+  handleFinish(index) {
+    let {periods} = this.state;
+    periods[index].active = false;
+    console.log('handleFinish');
+    this.setState({periods}, () => {
+      if (periods[index + 1]) {
+        console.log('next index', index + 1);
+        periods[index + 1].active = true;
+        this.toggleTimer(true, index + 1);
+      }
+    });
   }
 
   render() {
@@ -52,21 +127,23 @@ class MainScreen extends Component<Props> {
             <TouchableOpacity
               style={styles.touchable}
               onPress={() => this.createPeriod()}>
-              <Text style={styles.touchText}>Add a period</Text>
               <Icon style={styles.headerRightIcon} name="add" />
             </TouchableOpacity>
           </Right>
         </Header>
         <Content>
           {periods.map((period, index) => (
-            <Card key={index}>
-              <CardItem>
-                <Text>{period.time}</Text>
-              </CardItem>
-              <CardItem>
-                <Text>{period.delay}</Text>
-              </CardItem>
-            </Card>
+            <View key={index} style={styles.timerContainer}>
+              <Timer
+                totalDuration={period.totalDuration}
+                msecs
+                start={period.timerStart}
+                reset={period.timerReset}
+                options={options}
+                handleFinish={() => this.handleFinish(index)}
+                getTime={time => this.getFormattedTime(time, index)}
+              />
+            </View>
           ))}
         </Content>
         <Footer>
@@ -76,14 +153,14 @@ class MainScreen extends Component<Props> {
               <Text>Clear</Text>
             </Button>
             <Button vertical>
-              <Icon name="refresh" />
+              <Icon name="refresh" onPress={() => this.resetTimer()} />
               <Text>Refresh</Text>
             </Button>
             <Button vertical>
-              <Icon name="pause" />
+              <Icon name="pause" onPress={() => this.toggleTimer(false)} />
               <Text>Wait</Text>
             </Button>
-            <Button vertical>
+            <Button vertical onPress={() => this.toggleTimer(true)}>
               <Icon name="play" />
               <Text>Start</Text>
             </Button>
@@ -94,11 +171,27 @@ class MainScreen extends Component<Props> {
   }
 }
 
+const options = {
+  container: {
+    backgroundColor: 'white',
+    borderRadius: 5,
+  },
+  text: {
+    fontSize: 42,
+    color: '#222',
+  },
+};
+
 const styles = StyleSheet.create({
   headerRightIcon: {color: 'white'},
   headerRight: {paddingRight: 15},
   touchable: {flexDirection: 'row'},
   touchText: {marginRight: 15, marginTop: 3, color: 'white'},
+  timerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginVertical: 20,
+  },
 });
 
 const mapStateToProps = state => ({
