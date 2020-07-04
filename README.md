@@ -1,5 +1,5 @@
 # training-timer-app
-a customizable training timer app
+a customizable interval training timer app
 
 to use:
 
