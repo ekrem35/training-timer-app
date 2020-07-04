@@ -1,14 +1,15 @@
 import {combineReducers} from 'redux';
 
 const initialState = {
-  duration: 5000,
+  duration: 6000,
   periods: [
     {
       id: 0,
       timerStart: false,
-      totalDuration: 5000,
+      totalDuration: 6000,
       timerReset: false,
-      active: true,
+      active: false,
+      currentDuration: null,
     },
   ],
 };
